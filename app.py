@@ -15,7 +15,6 @@ def load_env_variables():
 def load_config():
 
     if os.path.exists(ENV_VARIABLES_FILE):
-
         load_env_variables()
 
     options = [
@@ -30,36 +29,32 @@ def load_config():
         if key not in os.environ:
 
             if option["required"]:
-
                 set_key = typer.prompt(f"{key}")
 
             else:
 
                 default = option["default"]
-
                 set_key = typer.prompt(f"{key} (Press - for default: {default})")
 
                 if set_key == "-":
-
                     set_key = default
 
             os.environ[key] = set_key
 
             with open(ENV_VARIABLES_FILE, 'a') as file:
-
                 file.write(f"{key}={set_key}\n")
 
             typer.echo(f"{key} successfully set!")
 
 @app.command()
-def config():
+def status():
     with open(ENV_VARIABLES_FILE, 'r') as file:
         for line in file:
             key, value = line.strip().split('=')
             typer.echo(f"{key}: {value}")
 
 @app.command()
-def reset():
+def config():
     with open(ENV_VARIABLES_FILE, 'w') as file:
         pass
 
