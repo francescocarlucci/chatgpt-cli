@@ -6,50 +6,79 @@ ENV_VARIABLES_FILE = ".secrets/env_variables.txt"
 
 app = typer.Typer()
 
-def load_env_variables(file_path):
-    with open(file_path, 'r') as file:
+def load_env_variables():
+    with open(ENV_VARIABLES_FILE, 'r') as file:
         for line in file:
             key, value = line.strip().split('=')
             os.environ[key] = value
 
-def set_api_keys():
+def load_config():
 
     if os.path.exists(ENV_VARIABLES_FILE):
 
-        load_env_variables(ENV_VARIABLES_FILE)
+        load_env_variables()
 
-    if "OPENAI_API_KEY" not in os.environ:
-    
-        openai_key = typer.prompt("Enter your OpenAI API key")
+    options = [
+        {"key": "OPENAI_API_KEY", "required": True},
+        {"key": "OPENAI_MODEL", "required": False, "default": "gpt-3.5-turbo"}
+    ]
 
-        os.environ["OPENAI_API_KEY"] = openai_key
+    for option in options:
 
-        with open(ENV_VARIABLES_FILE, 'w') as file:
+        key = option["key"]
 
-            file.write(f"OPENAI_API_KEY={openai_key}\n")
+        if key not in os.environ:
 
-        typer.echo("OPENAI_API_KEY successfully set!")
+            if option["required"]:
 
-set_api_keys()
+                set_key = typer.prompt(f"{key}")
 
-openai.api_key = os.environ["OPENAI_API_KEY"]
+            else:
+
+                default = option["default"]
+
+                set_key = typer.prompt(f"{key} (Press - for default: {default})")
+
+                if set_key == "-":
+
+                    set_key = default
+
+            os.environ[key] = set_key
+
+            with open(ENV_VARIABLES_FILE, 'a') as file:
+
+                file.write(f"{key}={set_key}\n")
+
+            typer.echo(f"{key} successfully set!")
+
+@app.command()
+def config():
+    with open(ENV_VARIABLES_FILE, 'r') as file:
+        for line in file:
+            key, value = line.strip().split('=')
+            typer.echo(f"{key}: {value}")
 
 @app.command()
 def reset():
-
     with open(ENV_VARIABLES_FILE, 'w') as file:
         pass
 
-    set_api_keys()
+    load_config()
 
 @app.command()
 def chat(verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose mode.")):
+
+    load_config()
+
+    openai.api_key = os.environ["OPENAI_API_KEY"]
+
+    openai_model = os.environ["OPENAI_MODEL"]
 
     memory = []
 
     while True:
 
-        user_content = typer.prompt("Enter your query")
+        user_content = typer.prompt("User")
 
         if user_content.lower() == "exit":
             typer.echo("Goodbye!")
@@ -58,7 +87,7 @@ def chat(verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable ver
         memory.append({"role": "user", "content": user_content})
 
         completion = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+            model=openai_model,
             messages=memory
         )
 
