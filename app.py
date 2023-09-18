@@ -1,73 +1,34 @@
 import os
 import typer
 import openai
+from typing_extensions import Annotated
 
-ENV_VARIABLES_FILE = ".secrets/env_variables.txt"
+API_KEY_FILE = ".secrets/openai_key.txt"
 
 app = typer.Typer()
 
-def load_env_variables():
-    with open(ENV_VARIABLES_FILE, 'r') as file:
-        for line in file:
-            key, value = line.strip().split('=')
-            os.environ[key] = value
+def load_api_key():
+    if os.path.exists(API_KEY_FILE):
+        with open(API_KEY_FILE, 'r') as file:
+            api_key = file.read()
+            os.environ["OPENAI_API_KEY"] = api_key
 
-def load_config():
+def store_api_key(api_key):
+    if not os.path.exists(API_KEY_FILE):
+        with open(API_KEY_FILE, 'w') as file:
+            file.write(f"{api_key}")
 
-    if os.path.exists(ENV_VARIABLES_FILE):
-        load_env_variables()
-
-    options = [
-        {"key": "OPENAI_API_KEY", "required": True},
-        {"key": "OPENAI_MODEL", "required": False, "default": "gpt-3.5-turbo"}
-    ]
-
-    for option in options:
-
-        key = option["key"]
-
-        if key not in os.environ:
-
-            if option["required"]:
-                set_key = typer.prompt(f"{key}")
-
-            else:
-
-                default = option["default"]
-                set_key = typer.prompt(f"{key} (Press - for default: {default})")
-
-                if set_key == "-":
-                    set_key = default
-
-            os.environ[key] = set_key
-
-            with open(ENV_VARIABLES_FILE, 'a') as file:
-                file.write(f"{key}={set_key}\n")
-
-            typer.echo(f"{key} successfully set!")
+load_api_key()
 
 @app.command()
-def status():
-    with open(ENV_VARIABLES_FILE, 'r') as file:
-        for line in file:
-            key, value = line.strip().split('=')
-            typer.echo(f"{key}: {value}")
+def chat(
+    api_key: Annotated[str, typer.Option(envvar="OPENAI_API_KEY", prompt=True)],
+    model: Annotated[str, typer.Option("--model")] = "gpt-3.5-turbo"
+    ):
 
-@app.command()
-def config():
-    with open(ENV_VARIABLES_FILE, 'w') as file:
-        pass
+    store_api_key(api_key)
 
-    load_config()
-
-@app.command()
-def chat(verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose mode.")):
-
-    load_config()
-
-    openai.api_key = os.environ["OPENAI_API_KEY"]
-
-    openai_model = os.environ["OPENAI_MODEL"]
+    openai.api_key = api_key
 
     memory = []
 
@@ -82,17 +43,13 @@ def chat(verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable ver
         memory.append({"role": "user", "content": user_content})
 
         completion = openai.ChatCompletion.create(
-            model=openai_model,
+            model=model,
             messages=memory
         )
 
         response = completion.choices[0].message.content
 
         memory.append({"role": "assistant", "content": response})
-
-        # debug memory
-        if verbose:
-            typer.secho(memory, fg=typer.colors.RED)
 
         typer.secho(response, fg=typer.colors.GREEN)
 
