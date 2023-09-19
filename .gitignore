@@ -1,5 +1,6 @@
 .DS_Store
 .secrets/
+history/
 env/
 venv/
 __pycache__/
