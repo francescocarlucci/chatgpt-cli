@@ -28,7 +28,7 @@ pip install openai
 
 And you are good to invoke it with `python3 app.py`.
 
-For usability, I like t add an alias to my Mac and invoke it with one command:
+For usability, I like to add an alias to my Mac and invoke it with one command:
 
 `echo "alias gptcli='python3 path-to/app.py'" >> ~/.zshrc && source ~/.zshrc`
 
