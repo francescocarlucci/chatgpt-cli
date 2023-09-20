@@ -2,6 +2,8 @@
 
 An extra-minimalistic CLI to interact with ChatGPT via OpenAI API.
 
+![ChatGPT CLI](https://github.com/francescocarlucci/chatgpt-cli/blob/main/images/demo.png)
+
 I created this CLI tool because I use ChatGPT a lot in my daily tasks for a variety of purposes including coding, copywriting, brainstorming and "googling". I was looking for a more immediate way to access it, and as I spend lots of time on the CLI, the most usable way for me was to have it built into the CLI itself.
 
 Despite being only 60 lines of code, ChatGPT-CLI allows to:
