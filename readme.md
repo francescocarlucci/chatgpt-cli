@@ -47,15 +47,15 @@ HISTORY_PATH = "path-to/history/"
 
 `python3 app.py --model=gpt-4 -ml=4` Uses GPT-4 as LLM and limit the memory to the last 4 messages.
 
-`python3 app.py -t=1` Set the temperature to 0.9 (more crestive).
+`python3 app.py -t=0.9` Set the temperature to 0.9 (more creative).
 
-`python3 app.py --load=history/marketing_plan.txt` Initiate a chat from an existing conversation.
+`python3 app.py --load=history/marketing_plan.txt` Load an existing conversation into memory.
 
 `python3 app.py --help` to get fresh info about parameters and usage. 
 
 **To save a conversation, type `save` as User prompt.**
 
-To exit a conversation, type `exit` as User prompt.
+To exit, type `exit` as User prompt.
 
 ### Development Ideas
 
